@@ -203,6 +203,7 @@ Type "help"
 <div class="modal" id="config">
   <div class="modal-box">
     <h3>System Config</h3>
+    <button onclick="toggleMusic()">Música Ambiente ON / OFF</button>
     <button onclick="restart()">Restart All</button>
     <label>Escolha a cor do Neon:</label>
     <input type="color" id="neonColor" value="#00ff9c" onchange="changeNeon(this.value)">
@@ -218,7 +219,7 @@ Type "help"
 <!-- DISCORD GROUP -->
 <div class="modal" id="discord">
   <div class="modal-box" style="text-align:center">
-    <img src="discord.png" alt="Discord" style="width:80px;opacity:.9;margin-bottom:10px">
+    <img src="Discord.png" alt="Discord" style="width:80px;opacity:.9;margin-bottom:10px">
     <h3>Os Guri</h3>
     <p style="font-size:13px;opacity:.8">Só Zuera Na Causa</p>
     <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px">
@@ -230,6 +231,23 @@ Type "help"
 </div>
 
 <script>
+// ===== AUDIO SYSTEM =====
+const bgMusic = new Audio('ambiente.mp3');
+bgMusic.loop = true;
+bgMusic.volume = 0.4;
+if(localStorage.getItem('music') === 'on'){
+  bgMusic.play().catch(()=>{});
+}
+function toggleMusic(){
+  if(bgMusic.paused){
+    bgMusic.play();
+    localStorage.setItem('music','on');
+  } else {
+    bgMusic.pause();
+    localStorage.setItem('music','off');
+  }
+}
+
 // ===== LANGUAGE SYSTEM =====
 const LANG={
  pt:{
