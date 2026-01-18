@@ -134,10 +134,19 @@ body::before{
 .grid-bg{ position:fixed; inset:0; background-image:linear-gradient(rgba(0,255,156,.05) 1px, transparent 1px),linear-gradient(90deg, rgba(0,255,156,.05) 1px, transparent 1px); background-size:40px 40px; animation:gridmove 30s linear infinite; pointer-events:none; }
 @keyframes gridmove{ from{background-position:0 0,0 0;} to{background-position:800px 400px,400px 800px;} }
 #particles{ position:fixed; inset:0; pointer-events:none; }
+/* ===== CENTRAL TERMINAL STYLE ===== */
+.central-terminal{
+  color:var(--neon);
+  font-size:14px;
+  line-height:1.4;
+  text-shadow:0 0 6px var(--neon);
+  animation:flicker 3s infinite;
+}
+@keyframes flicker{
+  0%,100%{opacity:1}
+  50%{opacity:.95}
+}
 
-/* ===== ESTILO DOS GAMES ===== */
-.game-card{border:1px solid var(--neon); margin:5px 0; padding:8px; cursor:pointer; transition:all 0.3s; background:rgba(0,0,0,0.2);}
-.game-card:hover{box-shadow:0 0 10px var(--neon);}
 </style>
 </head>
 
@@ -150,34 +159,13 @@ body::before{
   <div id="adminTab"></div>
   <div class="gears">
     <div class="gear" onclick="openConfig()">⚙️</div>
-    <div class="gear" onclick="openDiscord()"><img src="Discord.png" style="width:18px;height:18px;vertical-align:middle"></div>
-    <div class="gear" onclick="openGames()">🎮</div>
-    <div class="gear" id="musicToggle" onclick="toggleMusicState()">🎵</div>
+    <div class="gear" onclick="openDiscord()">🗨️</div>
   </div>
 </div>
 
 <div id="central" class="content active">
-  <div class="central-wrap">
-    <h1 class="glitch" data-text="PROJECT: NEXUS">PROJECT: NEXUS</h1>
-    <p class="subtitle">Sistema operacional experimental • Interface Neural</p>
-    <div class="status-grid">
-      <div class="status-card">
-        <span class="label">CORE</span>
-        <span class="value ok">ONLINE</span>
-      </div>
-      <div class="status-card">
-        <span class="label">SECURITY</span>
-        <span class="value warn">ACTIVE</span>
-      </div>
-      <div class="status-card">
-        <span class="label">NETWORK</span>
-        <span class="value ok">STABLE</span>
-      </div>
-      <div class="status-card">
-        <span class="label">AI MODULE</span>
-        <span class="value">LEARNING</span>
-      </div>
-    </div>
+  <pre id="centralTerminal" class="central-terminal"></pre>
+</div>
     <div class="bootlog">
       <div>&gt; Initializing Nexus Core...</div>
       <div>&gt; Syncing neural layers...</div>
@@ -225,7 +213,7 @@ Type "help"
 <!-- DISCORD GROUP -->
 <div class="modal" id="discord">
   <div class="modal-box" style="text-align:center">
-    <img src="Discord.png" alt="Discord" style="width:80px;opacity:.9;margin-bottom:10px">
+    <img src="discord.png" alt="Discord" style="width:80px;opacity:.9;margin-bottom:10px">
     <h3>Os Guri</h3>
     <p style="font-size:13px;opacity:.8">Só Zuera Na Causa</p>
     <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px">
@@ -236,24 +224,41 @@ Type "help"
   </div>
 </div>
 
-<!-- MODAL DE GAMES -->
-<div class="modal" id="gamesModal">
-  <div class="modal-box" style="width:550px; max-width:90%; text-align:left;">
-    <h3 style="color:var(--neon)">GAMES CENTER</h3>
-    <div id="gamesContainer"></div>
-    <div style="margin-top:10px; display:flex; justify-content:space-between;">
-      <button onclick="prevPage()" style="border:1px solid var(--neon); background:none; color:var(--neon); cursor:pointer;">&lt; Prev</button>
-      <button onclick="nextPage()" style="border:1px solid var(--neon); background:none; color:var(--neon); cursor:pointer;">Next &gt;</button>
-    </div>
-    <button onclick="closeGames()" style="margin-top:10px; width:100%; border:1px solid var(--neon); background:none; color:var(--neon); cursor:pointer;">Close</button>
-  </div>
-</div>
-
-<!-- AUDIO DE FUNDO -->
-<audio id="bgMusic" src="ambiente.mp3" loop autoplay></audio>
-
 <script>
-// ===== TERMINAL =====
+// ===== LANGUAGE SYSTEM =====
+const LANG={
+ pt:{
+  boot:`PROJECT : NEXUS
+-------------------------
+Sistema operacional experimental
+
+CORE: ONLINE
+SECURITY: ACTIVE
+NETWORK: STABLE
+AI MODULE: LEARNING
+
+> Sistema pronto.`
+ },
+ en:{
+  boot:`PROJECT : NEXUS
+-------------------------
+Experimental operating system
+
+CORE: ONLINE
+SECURITY: ACTIVE
+NETWORK: STABLE
+AI MODULE: LEARNING
+
+> System ready.`
+ }
+};
+let currentLang=localStorage.getItem('lang')||'pt';
+function renderCentral(){
+ document.getElementById('centralTerminal').textContent=LANG[currentLang].boot;
+}
+renderCentral();
+
+
 const output=document.getElementById("output");
 const input=document.getElementById("cmd");
 input.addEventListener("keydown",e=>{
@@ -284,10 +289,6 @@ function toggleJoin(){
  btn.style.opacity=cb.checked?"1":".4";
  btn.style.pointerEvents=cb.checked?"auto":"none";
 }
-// Botão Discord abre link real
-document.getElementById('joinBtn').addEventListener('click', () => {
-  window.open('https://discord.gg/9EdGdHRnGE', '_blank');
-});
 function changeNeon(c){
  document.documentElement.style.setProperty('--neon',c);
  [...document.querySelectorAll('.tab')].forEach(t=>t.style.borderColor=c);
@@ -299,6 +300,9 @@ function unlockAdmin(){
  document.getElementById("adminTab").innerHTML='<div class="tab" onclick="openTab(\'admin\')">ADMIN</div>';
 }
 function exec(cmd){
+ if(cmd==='pt'){currentLang='pt';localStorage.setItem('lang','pt');renderCentral();log('Idioma alterado para Português (Brasil)');return;}
+ if(cmd==='en'){currentLang='en';localStorage.setItem('lang','en');renderCentral();log('Language set to English');return;}
+
  log(`> ${cmd}`);
  if(cmd==="help"){
   log("Commands: help, restart all, open central, open terminal, open logs, clear");
@@ -326,112 +330,22 @@ function exec(cmd){
  else base='#030406';
  document.body.style.background=base;
 })();
-// ===== PARTICULAS =====
+
+// ===== PARTÍCULAS =====
 const c=document.getElementById('particles');
 const ctx=c.getContext('2d');
 let W,H,parts=[];
 function resize(){W=c.width=innerWidth;H=c.height=innerHeight;} window.addEventListener('resize',resize); resize();
 for(let i=0;i<80;i++) parts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,r:1+Math.random()*2});
 function tick(){ctx.clearRect(0,0,W,H); ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--neon'); parts.forEach(p=>{p.x+=p.vx; p.y+=p.vy; if(p.x<0||p.x>W) p.vx*=-1; if(p.y<0||p.y>H) p.vy*=-1; ctx.globalAlpha=.6; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();}); requestAnimationFrame(tick);} tick();
+
 // ===== REAÇÕES =====
 document.addEventListener('click',()=>flash()); input.addEventListener('keydown',()=>flash());
 function flash(){ document.documentElement.style.setProperty('--pulse',Math.random()); document.body.classList.add('neon-pulse'); setTimeout(()=>document.body.classList.remove('neon-pulse'),300); }
+
 // ===== REAGE A MODAIS =====
 const _openConfig=openConfig; openConfig=function(){ _openConfig(); flash(); };
 const _openDiscord=openDiscord; openDiscord=function(){ _openDiscord(); flash(); };
-
-// ===== GAMES MODAL =====
-const games = [
-  {name:"Zombies.io", url:"https://zombs.io/", desc:"Sobreviva hordas de zumbis em equipe."},
-  {name:"Taming.io", url:"https://taming.io/", desc:"Capture criaturas e domine o mundo."},
-  {name:"Diep.io", url:"https://diep.io/", desc:"Controle um tanque e destrua inimigos."},
-  {name:"Mope.io", url:"https://mope.io/", desc:"Sobreviva e evolua na natureza."},
-  {name:"Extra 1", url:"#", desc:"Jogo extra 1."},
-  {name:"Extra 2", url:"#", desc:"Jogo extra 2."}
-];
-
-let currentPage = 0;
-const pageSize = 4;
-
-function renderGames() {
-  const container = document.getElementById('gamesContainer');
-  container.innerHTML = '';
-  const start = currentPage * pageSize;
-  const end = start + pageSize;
-  const pageGames = games.slice(start, end);
-
-  pageGames.forEach((game) => {
-    const card = document.createElement('div');
-    card.className = 'game-card';
-    card.innerHTML = `<strong>${game.name}</strong>`;
-
-    const details = document.createElement('div');
-    details.style.display = 'none';
-    details.style.marginTop = '5px';
-    details.innerHTML = `
-      <p style="font-size:12px;opacity:.8">${game.desc}</p>
-      <label style="display:flex;align-items:center;gap:5px; font-size:12px;">
-        <input type="checkbox" class="agree"> Entendo os riscos
-      </label>
-      <button style="margin-top:5px; width:100%; opacity:.4; pointer-events:none; border:1px solid var(--neon); background:none; color:var(--neon); cursor:pointer;">ACESSAR</button>
-    `;
-    card.appendChild(details);
-
-    card.addEventListener('click', e => {
-      if(e.target.tagName!=='INPUT' && e.target.tagName!=='BUTTON'){
-        details.style.display = details.style.display==='none' ? 'block' : 'none';
-      }
-    });
-
-    const checkbox = details.querySelector('.agree');
-    const button = details.querySelector('button');
-    checkbox.addEventListener('change', () => {
-      button.style.opacity = checkbox.checked ? '1' : '.4';
-      button.style.pointerEvents = checkbox.checked ? 'auto' : 'none';
-    });
-
-    button.addEventListener('click', () => {
-      window.open(game.url, '_blank');
-    });
-
-    container.appendChild(card);
-  });
-}
-
-function openGames(){ document.getElementById('gamesModal').style.display='flex'; renderGames(); }
-function closeGames(){ document.getElementById('gamesModal').style.display='none'; }
-function nextPage(){ if((currentPage+1)*pageSize<games.length){ currentPage++; renderGames(); } }
-function prevPage(){ if(currentPage>0){ currentPage--; renderGames(); } }
-
-// ===== AUDIO DE FUNDO COM LOCALSTORAGE =====
-const bgMusic = document.getElementById('bgMusic');
-bgMusic.volume = 0.25; // volume inicial
-
-const musicToggle = document.getElementById('musicToggle');
-
-function toggleMusicState() {
-  if(bgMusic.paused){
-    bgMusic.play();
-    localStorage.setItem('musicState','on');
-    musicToggle.style.color = getComputedStyle(document.documentElement).getPropertyValue('--neon');
-  } else {
-    bgMusic.pause();
-    localStorage.setItem('musicState','off');
-    musicToggle.style.color = '#555';
-  }
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-  const state = localStorage.getItem('musicState');
-  if(state==='off'){
-    bgMusic.pause();
-    musicToggle.style.color = '#555';
-  } else {
-    bgMusic.play();
-    musicToggle.style.color = getComputedStyle(document.documentElement).getPropertyValue('--neon');
-  }
-});
-
 </script>
 
 <div class="grid-bg"></div>
