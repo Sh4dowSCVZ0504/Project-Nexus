@@ -138,6 +138,17 @@ body::before{
 /* ===== ESTILO DOS GAMES ===== */
 .game-card{border:1px solid var(--neon); margin:5px 0; padding:8px; cursor:pointer; transition:all 0.3s; background:rgba(0,0,0,0.2);}
 .game-card:hover{box-shadow:0 0 10px var(--neon);}
+
+/* ===== NOVAS CLASSES INCREMENTAIS ===== */
+.game-folder { overflow:hidden; transition:max-height 0.4s ease, box-shadow 0.3s ease; max-height:70px; cursor:pointer; }
+.game-folder.open { max-height:260px; box-shadow:0 0 25px rgba(0,255,255,0.4); }
+.game-access { opacity:0.3; pointer-events:none; transition: all 0.3s ease; }
+.game-access.active { opacity:1; pointer-events:auto; box-shadow:0 0 15px rgba(0,255,255,0.6); }
+.game-access.active:hover { transform: scale(1.08); }
+.page-indicator { text-align:center; margin-top:10px; color:#00ffff; opacity:0.7; }
+.nexus-discord-btn { display:flex; align-items:center; justify-content:center; margin-top:10px; padding:10px 14px; border-radius:10px; text-decoration:none; font-weight:600; color:#00ffff; border:1px solid rgba(0,255,255,0.4); background:rgba(0,255,255,0.08); box-shadow:0 0 10px rgba(0,255,255,0.25); transition: all 0.3s ease; }
+.nexus-discord-btn:hover { background:rgba(0,255,255,0.18); box-shadow:0 0 20px rgba(0,255,255,0.6); transform: scale(1.05); }
+
 </style>
 </head>
 
@@ -236,15 +247,24 @@ Type "help"
   </div>
 </div>
 
-<!-- MODAL DE GAMES -->
+<!-- MODAL DE GAMES ATUALIZADO -->
 <div class="modal" id="gamesModal">
   <div class="modal-box" style="width:550px; max-width:90%; text-align:left;">
     <h3 style="color:var(--neon)">GAMES CENTER</h3>
     <div id="gamesContainer"></div>
-    <div style="margin-top:10px; display:flex; justify-content:space-between;">
+    
+    <!-- Paginação -->
+    <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
       <button onclick="prevPage()" style="border:1px solid var(--neon); background:none; color:var(--neon); cursor:pointer;">&lt; Prev</button>
+      <span class="page-indicator" id="pageIndicator">Página 1 / 2</span>
       <button onclick="nextPage()" style="border:1px solid var(--neon); background:none; color:var(--neon); cursor:pointer;">Next &gt;</button>
     </div>
+
+    <!-- Discord link -->
+    <a href="https://discord.gg/9EdGdHRnGE" target="_blank" class="nexus-discord-btn">
+      <span>Discord</span>
+    </a>
+
     <button onclick="closeGames()" style="margin-top:10px; width:100%; border:1px solid var(--neon); background:none; color:var(--neon); cursor:pointer;">Close</button>
   </div>
 </div>
@@ -333,7 +353,7 @@ function flash(){ document.documentElement.style.setProperty('--pulse',Math.rand
 const _openConfig=openConfig; openConfig=function(){ _openConfig(); flash(); };
 const _openDiscord=openDiscord; openDiscord=function(){ _openDiscord(); flash(); };
 
-// ===== GAMES MODAL =====
+// ===== GAMES MODAL COMPLETO =====
 const games = [
   {name:"Zombies.io", url:"https://zombs.io/", desc:"Sobreviva hordas de zumbis em equipe."},
   {name:"Taming.io", url:"https://taming.io/", desc:"Capture criaturas e domine o mundo."},
@@ -355,7 +375,7 @@ function renderGames() {
 
   pageGames.forEach((game) => {
     const card = document.createElement('div');
-    card.className = 'game-card';
+    card.className = 'game-card game-folder';
     card.innerHTML = `<strong>${game.name}</strong>`;
 
     const details = document.createElement('div');
@@ -366,21 +386,22 @@ function renderGames() {
       <label style="display:flex;align-items:center;gap:5px; font-size:12px;">
         <input type="checkbox" class="agree"> Entendo os riscos
       </label>
-      <button style="margin-top:5px; width:100%; opacity:.4; pointer-events:none; border:1px solid var(--neon); background:none; color:var(--neon); cursor:pointer;">ACESSAR</button>
+      <button class="game-access">ACESSAR</button>
     `;
     card.appendChild(details);
 
+    // Expansão pasta
     card.addEventListener('click', e => {
       if(e.target.tagName!=='INPUT' && e.target.tagName!=='BUTTON'){
+        card.classList.toggle('open');
         details.style.display = details.style.display==='none' ? 'block' : 'none';
       }
     });
 
     const checkbox = details.querySelector('.agree');
-    const button = details.querySelector('button');
+    const button = details.querySelector('.game-access');
     checkbox.addEventListener('change', () => {
-      button.style.opacity = checkbox.checked ? '1' : '.4';
-      button.style.pointerEvents = checkbox.checked ? 'auto' : 'none';
+      button.classList.toggle('active', checkbox.checked);
     });
 
     button.addEventListener('click', () => {
@@ -389,6 +410,13 @@ function renderGames() {
 
     container.appendChild(card);
   });
+
+  updatePageIndicator(currentPage+1, Math.ceil(games.length/pageSize));
+}
+
+function updatePageIndicator(current, total) {
+  document.getElementById('pageIndicator').textContent =
+    `Página ${current} / ${total}`;
 }
 
 function openGames(){ document.getElementById('gamesModal').style.display='flex'; renderGames(); }
@@ -406,4 +434,3 @@ function prevPage(){
 <canvas id="particles"></canvas>
 </body>
 </html>
-
