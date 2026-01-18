@@ -137,9 +137,7 @@ body::before{
 
 /* ===== ESTILO DOS GAMES ===== */
 .game-card{border:1px solid var(--neon); margin:5px 0; padding:8px; cursor:pointer; transition:all 0.3s; background:rgba(0,0,0,0.2);}
-.game-card.open{background:rgba(0,0,0,0.3);}
 .game-card:hover{box-shadow:0 0 10px var(--neon);}
-.game-card div button.active{opacity:1; pointer-events:auto;}
 </style>
 </head>
 
@@ -152,8 +150,9 @@ body::before{
   <div id="adminTab"></div>
   <div class="gears">
     <div class="gear" onclick="openConfig()">⚙️</div>
-    <div class="gear" onclick="openDiscord()"><img src="Discord.png" style="width:18px;height:18px;"></div>
+    <div class="gear" onclick="openDiscord()"><img src="Discord.png" style="width:18px;height:18px;vertical-align:middle"></div>
     <div class="gear" onclick="openGames()">🎮</div>
+    <div class="gear" id="musicToggle" onclick="toggleMusicState()">🎵</div>
   </div>
 </div>
 
@@ -242,14 +241,16 @@ Type "help"
   <div class="modal-box" style="width:550px; max-width:90%; text-align:left;">
     <h3 style="color:var(--neon)">GAMES CENTER</h3>
     <div id="gamesContainer"></div>
-    <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+    <div style="margin-top:10px; display:flex; justify-content:space-between;">
       <button onclick="prevPage()" style="border:1px solid var(--neon); background:none; color:var(--neon); cursor:pointer;">&lt; Prev</button>
-      <span id="pageIndicator" style="color:var(--neon); font-size:12px;"></span>
       <button onclick="nextPage()" style="border:1px solid var(--neon); background:none; color:var(--neon); cursor:pointer;">Next &gt;</button>
     </div>
     <button onclick="closeGames()" style="margin-top:10px; width:100%; border:1px solid var(--neon); background:none; color:var(--neon); cursor:pointer;">Close</button>
   </div>
 </div>
+
+<!-- AUDIO DE FUNDO -->
+<audio id="bgMusic" src="ambiente.mp3" loop autoplay></audio>
 
 <script>
 // ===== TERMINAL =====
@@ -283,6 +284,7 @@ function toggleJoin(){
  btn.style.opacity=cb.checked?"1":".4";
  btn.style.pointerEvents=cb.checked?"auto":"none";
 }
+// Botão Discord abre link real
 document.getElementById('joinBtn').addEventListener('click', () => {
   window.open('https://discord.gg/9EdGdHRnGE', '_blank');
 });
@@ -298,14 +300,23 @@ function unlockAdmin(){
 }
 function exec(cmd){
  log(`> ${cmd}`);
- if(cmd==="help"){ log("Commands: help, restart all, open central, open terminal, open logs, clear"); }
+ if(cmd==="help"){
+  log("Commands: help, restart all, open central, open terminal, open logs, clear");
+ }
  else if(cmd==="restart all"){restart();}
- else if(cmd.startsWith("open")){ openTab(cmd.split(" ")[1]); }
- else if(cmd==="clear"){ output.textContent="NEXUS OS v1.1.0\nCORE INITIALIZED.\n"; }
- else if(cmd==="87236512"){ unlockAdmin(); }
- else{ log("Unknown command."); }
+ else if(cmd.startsWith("open")){
+  openTab(cmd.split(" ")[1]);
+ }
+ else if(cmd==="clear"){
+  output.textContent="NEXUS OS v1.1.0\nCORE INITIALIZED.\n";
+ }
+ else if(cmd==="87236512"){
+  unlockAdmin();
+ }
+ else{
+  log("Unknown command.");
+ }
 }
-
 // ===== TEMA VIVO: HORA DO DIA =====
 (function(){
  const h=new Date().getHours();
@@ -315,7 +326,6 @@ function exec(cmd){
  else base='#030406';
  document.body.style.background=base;
 })();
-
 // ===== PARTICULAS =====
 const c=document.getElementById('particles');
 const ctx=c.getContext('2d');
@@ -323,12 +333,9 @@ let W,H,parts=[];
 function resize(){W=c.width=innerWidth;H=c.height=innerHeight;} window.addEventListener('resize',resize); resize();
 for(let i=0;i<80;i++) parts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,r:1+Math.random()*2});
 function tick(){ctx.clearRect(0,0,W,H); ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--neon'); parts.forEach(p=>{p.x+=p.vx; p.y+=p.vy; if(p.x<0||p.x>W) p.vx*=-1; if(p.y<0||p.y>H) p.vy*=-1; ctx.globalAlpha=.6; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();}); requestAnimationFrame(tick);} tick();
-
 // ===== REAÇÕES =====
-document.addEventListener('click',()=>flash());
-input.addEventListener('keydown',()=>flash());
+document.addEventListener('click',()=>flash()); input.addEventListener('keydown',()=>flash());
 function flash(){ document.documentElement.style.setProperty('--pulse',Math.random()); document.body.classList.add('neon-pulse'); setTimeout(()=>document.body.classList.remove('neon-pulse'),300); }
-
 // ===== REAGE A MODAIS =====
 const _openConfig=openConfig; openConfig=function(){ _openConfig(); flash(); };
 const _openDiscord=openDiscord; openDiscord=function(){ _openDiscord(); flash(); };
@@ -366,22 +373,21 @@ function renderGames() {
       <label style="display:flex;align-items:center;gap:5px; font-size:12px;">
         <input type="checkbox" class="agree"> Entendo os riscos
       </label>
-      <button class="game-access" style="margin-top:5px; width:100%; opacity:.4; pointer-events:none; border:1px solid var(--neon); background:none; color:var(--neon); cursor:pointer;">ACESSAR</button>
+      <button style="margin-top:5px; width:100%; opacity:.4; pointer-events:none; border:1px solid var(--neon); background:none; color:var(--neon); cursor:pointer;">ACESSAR</button>
     `;
     card.appendChild(details);
 
-    // Mini pasta expandível
     card.addEventListener('click', e => {
       if(e.target.tagName!=='INPUT' && e.target.tagName!=='BUTTON'){
-        card.classList.toggle('open');
         details.style.display = details.style.display==='none' ? 'block' : 'none';
       }
     });
 
     const checkbox = details.querySelector('.agree');
-    const button = details.querySelector('.game-access');
+    const button = details.querySelector('button');
     checkbox.addEventListener('change', () => {
-      button.classList.toggle('active', checkbox.checked);
+      button.style.opacity = checkbox.checked ? '1' : '.4';
+      button.style.pointerEvents = checkbox.checked ? 'auto' : 'none';
     });
 
     button.addEventListener('click', () => {
@@ -390,15 +396,42 @@ function renderGames() {
 
     container.appendChild(card);
   });
-
-  document.getElementById('pageIndicator').textContent = `Página ${currentPage+1} / ${Math.ceil(games.length/pageSize)}`;
 }
 
 function openGames(){ document.getElementById('gamesModal').style.display='flex'; renderGames(); }
 function closeGames(){ document.getElementById('gamesModal').style.display='none'; }
 function nextPage(){ if((currentPage+1)*pageSize<games.length){ currentPage++; renderGames(); } }
 function prevPage(){ if(currentPage>0){ currentPage--; renderGames(); } }
-  
+
+// ===== AUDIO DE FUNDO COM LOCALSTORAGE =====
+const bgMusic = document.getElementById('bgMusic');
+bgMusic.volume = 0.25; // volume inicial
+
+const musicToggle = document.getElementById('musicToggle');
+
+function toggleMusicState() {
+  if(bgMusic.paused){
+    bgMusic.play();
+    localStorage.setItem('musicState','on');
+    musicToggle.style.color = getComputedStyle(document.documentElement).getPropertyValue('--neon');
+  } else {
+    bgMusic.pause();
+    localStorage.setItem('musicState','off');
+    musicToggle.style.color = '#555';
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const state = localStorage.getItem('musicState');
+  if(state==='off'){
+    bgMusic.pause();
+    musicToggle.style.color = '#555';
+  } else {
+    bgMusic.play();
+    musicToggle.style.color = getComputedStyle(document.documentElement).getPropertyValue('--neon');
+  }
+});
+
 </script>
 
 <div class="grid-bg"></div>
