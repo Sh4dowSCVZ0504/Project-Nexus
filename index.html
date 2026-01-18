@@ -206,6 +206,11 @@ Type "help"
     <button onclick="restart()">Restart All</button>
     <label>Escolha a cor do Neon:</label>
     <input type="color" id="neonColor" value="#00ff9c" onchange="changeNeon(this.value)">
+
+    <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px">
+      <input type="checkbox" id="musicToggle" onchange="toggleMusic()"> Música de fundo
+    </label>
+
     <button onclick="closeConfig()">Close</button>
   </div>
 </div>
@@ -338,6 +343,21 @@ let W,H,parts=[];
 function resize(){W=c.width=innerWidth;H=c.height=innerHeight;} window.addEventListener('resize',resize); resize();
 for(let i=0;i<80;i++) parts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,r:1+Math.random()*2});
 function tick(){ctx.clearRect(0,0,W,H); ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--neon'); parts.forEach(p=>{p.x+=p.vx; p.y+=p.vy; if(p.x<0||p.x>W) p.vx*=-1; if(p.y<0||p.y>H) p.vy*=-1; ctx.globalAlpha=.6; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();}); requestAnimationFrame(tick);} tick();
+
+// ===== MUSIC SYSTEM =====
+const bgMusic=new Audio('music.mp3');
+bgMusic.loop=true;
+bgMusic.volume=0.4;
+const musicState=localStorage.getItem('music')||'off';
+if(musicState==='on'){
+ bgMusic.play();
+ setTimeout(()=>{const t=document.getElementById('musicToggle'); if(t) t.checked=true;},200);
+}
+function toggleMusic(){
+ const on=document.getElementById('musicToggle').checked;
+ localStorage.setItem('music',on?'on':'off');
+ if(on) bgMusic.play(); else bgMusic.pause();
+}
 
 // ===== REAÇÕES =====
 document.addEventListener('click',()=>flash()); input.addEventListener('keydown',()=>flash());
