@@ -137,18 +137,9 @@ body::before{
 
 /* ===== ESTILO DOS GAMES ===== */
 .game-card{border:1px solid var(--neon); margin:5px 0; padding:8px; cursor:pointer; transition:all 0.3s; background:rgba(0,0,0,0.2);}
+.game-card.open{background:rgba(0,0,0,0.3);}
 .game-card:hover{box-shadow:0 0 10px var(--neon);}
-
-/* ===== NOVAS CLASSES INCREMENTAIS ===== */
-.game-folder { overflow:hidden; transition:max-height 0.4s ease, box-shadow 0.3s ease; max-height:70px; cursor:pointer; }
-.game-folder.open { max-height:260px; box-shadow:0 0 25px rgba(0,255,255,0.4); }
-.game-access { opacity:0.3; pointer-events:none; transition: all 0.3s ease; }
-.game-access.active { opacity:1; pointer-events:auto; box-shadow:0 0 15px rgba(0,255,255,0.6); }
-.game-access.active:hover { transform: scale(1.08); }
-.page-indicator { text-align:center; margin-top:10px; color:#00ffff; opacity:0.7; }
-.nexus-discord-btn { display:flex; align-items:center; justify-content:center; margin-top:10px; padding:10px 14px; border-radius:10px; text-decoration:none; font-weight:600; color:#00ffff; border:1px solid rgba(0,255,255,0.4); background:rgba(0,255,255,0.08); box-shadow:0 0 10px rgba(0,255,255,0.25); transition: all 0.3s ease; }
-.nexus-discord-btn:hover { background:rgba(0,255,255,0.18); box-shadow:0 0 20px rgba(0,255,255,0.6); transform: scale(1.05); }
-
+.game-card div button.active{opacity:1; pointer-events:auto;}
 </style>
 </head>
 
@@ -161,8 +152,7 @@ body::before{
   <div id="adminTab"></div>
   <div class="gears">
     <div class="gear" onclick="openConfig()">⚙️</div>
-    <div class="gear" onclick="openDiscord()">🗨️</div>
-    <!-- BOTÃO DE GAMES -->
+    <div class="gear" onclick="openDiscord()"><img src="Discord.png" style="width:18px;height:18px;"></div>
     <div class="gear" onclick="openGames()">🎮</div>
   </div>
 </div>
@@ -236,7 +226,7 @@ Type "help"
 <!-- DISCORD GROUP -->
 <div class="modal" id="discord">
   <div class="modal-box" style="text-align:center">
-    <img src="discord.png" alt="Discord" style="width:80px;opacity:.9;margin-bottom:10px">
+    <img src="Discord.png" alt="Discord" style="width:80px;opacity:.9;margin-bottom:10px">
     <h3>Os Guri</h3>
     <p style="font-size:13px;opacity:.8">Só Zuera Na Causa</p>
     <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px">
@@ -247,24 +237,16 @@ Type "help"
   </div>
 </div>
 
-<!-- MODAL DE GAMES ATUALIZADO -->
+<!-- MODAL DE GAMES -->
 <div class="modal" id="gamesModal">
   <div class="modal-box" style="width:550px; max-width:90%; text-align:left;">
     <h3 style="color:var(--neon)">GAMES CENTER</h3>
     <div id="gamesContainer"></div>
-    
-    <!-- Paginação -->
     <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
       <button onclick="prevPage()" style="border:1px solid var(--neon); background:none; color:var(--neon); cursor:pointer;">&lt; Prev</button>
-      <span class="page-indicator" id="pageIndicator">Página 1 / 2</span>
+      <span id="pageIndicator" style="color:var(--neon); font-size:12px;"></span>
       <button onclick="nextPage()" style="border:1px solid var(--neon); background:none; color:var(--neon); cursor:pointer;">Next &gt;</button>
     </div>
-
-    <!-- Discord link -->
-    <a href="https://discord.gg/9EdGdHRnGE" target="_blank" class="nexus-discord-btn">
-      <span>Discord</span>
-    </a>
-
     <button onclick="closeGames()" style="margin-top:10px; width:100%; border:1px solid var(--neon); background:none; color:var(--neon); cursor:pointer;">Close</button>
   </div>
 </div>
@@ -301,6 +283,9 @@ function toggleJoin(){
  btn.style.opacity=cb.checked?"1":".4";
  btn.style.pointerEvents=cb.checked?"auto":"none";
 }
+document.getElementById('joinBtn').addEventListener('click', () => {
+  window.open('https://discord.gg/9EdGdHRnGE', '_blank');
+});
 function changeNeon(c){
  document.documentElement.style.setProperty('--neon',c);
  [...document.querySelectorAll('.tab')].forEach(t=>t.style.borderColor=c);
@@ -313,23 +298,14 @@ function unlockAdmin(){
 }
 function exec(cmd){
  log(`> ${cmd}`);
- if(cmd==="help"){
-  log("Commands: help, restart all, open central, open terminal, open logs, clear");
- }
+ if(cmd==="help"){ log("Commands: help, restart all, open central, open terminal, open logs, clear"); }
  else if(cmd==="restart all"){restart();}
- else if(cmd.startsWith("open")){
-  openTab(cmd.split(" ")[1]);
- }
- else if(cmd==="clear"){
-  output.textContent="NEXUS OS v1.1.0\nCORE INITIALIZED.\n";
- }
- else if(cmd==="87236512"){
-  unlockAdmin();
- }
- else{
-  log("Unknown command.");
- }
+ else if(cmd.startsWith("open")){ openTab(cmd.split(" ")[1]); }
+ else if(cmd==="clear"){ output.textContent="NEXUS OS v1.1.0\nCORE INITIALIZED.\n"; }
+ else if(cmd==="87236512"){ unlockAdmin(); }
+ else{ log("Unknown command."); }
 }
+
 // ===== TEMA VIVO: HORA DO DIA =====
 (function(){
  const h=new Date().getHours();
@@ -339,6 +315,7 @@ function exec(cmd){
  else base='#030406';
  document.body.style.background=base;
 })();
+
 // ===== PARTICULAS =====
 const c=document.getElementById('particles');
 const ctx=c.getContext('2d');
@@ -346,14 +323,17 @@ let W,H,parts=[];
 function resize(){W=c.width=innerWidth;H=c.height=innerHeight;} window.addEventListener('resize',resize); resize();
 for(let i=0;i<80;i++) parts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,r:1+Math.random()*2});
 function tick(){ctx.clearRect(0,0,W,H); ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--neon'); parts.forEach(p=>{p.x+=p.vx; p.y+=p.vy; if(p.x<0||p.x>W) p.vx*=-1; if(p.y<0||p.y>H) p.vy*=-1; ctx.globalAlpha=.6; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();}); requestAnimationFrame(tick);} tick();
+
 // ===== REAÇÕES =====
-document.addEventListener('click',()=>flash()); input.addEventListener('keydown',()=>flash());
+document.addEventListener('click',()=>flash());
+input.addEventListener('keydown',()=>flash());
 function flash(){ document.documentElement.style.setProperty('--pulse',Math.random()); document.body.classList.add('neon-pulse'); setTimeout(()=>document.body.classList.remove('neon-pulse'),300); }
+
 // ===== REAGE A MODAIS =====
 const _openConfig=openConfig; openConfig=function(){ _openConfig(); flash(); };
 const _openDiscord=openDiscord; openDiscord=function(){ _openDiscord(); flash(); };
 
-// ===== GAMES MODAL COMPLETO =====
+// ===== GAMES MODAL =====
 const games = [
   {name:"Zombies.io", url:"https://zombs.io/", desc:"Sobreviva hordas de zumbis em equipe."},
   {name:"Taming.io", url:"https://taming.io/", desc:"Capture criaturas e domine o mundo."},
@@ -375,7 +355,7 @@ function renderGames() {
 
   pageGames.forEach((game) => {
     const card = document.createElement('div');
-    card.className = 'game-card game-folder';
+    card.className = 'game-card';
     card.innerHTML = `<strong>${game.name}</strong>`;
 
     const details = document.createElement('div');
@@ -386,11 +366,11 @@ function renderGames() {
       <label style="display:flex;align-items:center;gap:5px; font-size:12px;">
         <input type="checkbox" class="agree"> Entendo os riscos
       </label>
-      <button class="game-access">ACESSAR</button>
+      <button class="game-access" style="margin-top:5px; width:100%; opacity:.4; pointer-events:none; border:1px solid var(--neon); background:none; color:var(--neon); cursor:pointer;">ACESSAR</button>
     `;
     card.appendChild(details);
 
-    // Expansão pasta
+    // Mini pasta expandível
     card.addEventListener('click', e => {
       if(e.target.tagName!=='INPUT' && e.target.tagName!=='BUTTON'){
         card.classList.toggle('open');
@@ -411,22 +391,13 @@ function renderGames() {
     container.appendChild(card);
   });
 
-  updatePageIndicator(currentPage+1, Math.ceil(games.length/pageSize));
-}
-
-function updatePageIndicator(current, total) {
-  document.getElementById('pageIndicator').textContent =
-    `Página ${current} / ${total}`;
+  document.getElementById('pageIndicator').textContent = `Página ${currentPage+1} / ${Math.ceil(games.length/pageSize)}`;
 }
 
 function openGames(){ document.getElementById('gamesModal').style.display='flex'; renderGames(); }
 function closeGames(){ document.getElementById('gamesModal').style.display='none'; }
-function nextPage(){
-  if((currentPage+1)*pageSize < games.length){ currentPage++; renderGames(); }
-}
-function prevPage(){
-  if(currentPage>0){ currentPage--; renderGames(); }
-}
+function nextPage(){ if((currentPage+1)*pageSize<games.length){ currentPage++; renderGames(); } }
+function prevPage(){ if(currentPage>0){ currentPage--; renderGames(); } }
 
 </script>
 
