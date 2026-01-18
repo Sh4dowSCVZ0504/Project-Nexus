@@ -398,20 +398,6 @@ function openGames(){ document.getElementById('gamesModal').style.display='flex'
 function closeGames(){ document.getElementById('gamesModal').style.display='none'; }
 function nextPage(){ if((currentPage+1)*pageSize<games.length){ currentPage++; renderGames(); } }
 function prevPage(){ if(currentPage>0){ currentPage--; renderGames(); } }
-
-<!-- AUDIO DE FUNDO -->
-<audio id="bgMusic" src="ambiente.mp3" loop autoplay></audio>
-
-<script>
-// === CONTROLE DE AUDIO ===
-const bgMusic = document.getElementById('bgMusic');
-bgMusic.volume = 0.25; // volume inicial, pode ajustar (0.0 a 1.0)
-
-// Opcional: controlar via JS
-function toggleMusic() {
-  if(bgMusic.paused) bgMusic.play();
-  else bgMusic.pause();
-}
   
 </script>
 
